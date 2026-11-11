@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpeedDqie</title>
+<style>
+  @font-face {
+    font-family: 'SF Pro Display';
+    src: url('./fonts/SF-Pro-Display-Medium.woff2') format('woff2'),
+         url('./fonts/SF-Pro-Display-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    --bg-color: #ffffff;
+    --text-main: #1f2328;
+    --text-muted: #59636e;
+    --border-color: #d1d9e0;
+    --btn-bg: #f6f8fa;
+    --btn-hover: #eef1f4;
+    --green: #1f883d;
+    --green-hover: #1a7f37;
+    --grid-line: #f0f3f6;
+    --blue: #0969da;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden; /* Блокировка прокрутки на главной */
+  }
+
+  body.allow-scroll {
+    overflow-y: auto; /* Включаем прокрутку для внутренних страниц */
+  }
+
+  a { text-decoration: none; color: inherit; cursor: pointer; }
+  ul { list-style: none; }
+
+  .grid-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: 
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 25% 100%, 100% 200px;
+    z-index: -1; pointer-events: none;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 0;
+    background: var(--bg-color);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 1280px; margin: 0 auto; padding: 0 24px;
+  }
+
+  .nav-left { display: flex; align-items: center; gap: 24px; }
+  
+  .logo-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #000; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+    cursor: pointer; transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .logo-circle:hover { transform: scale(1.05); opacity: 0.9; }
+
+  .nav-links { display: flex; gap: 16px; font-size: 14px; font-weight: 500; }
+  .nav-links a { color: var(--text-main); position: relative; padding: 4px 0; transition: color 0.2s; }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+    background: var(--text-main); transition: width 0.3s ease;
+  }
+  .nav-links a:hover::after { width: 100%; }
+
+  .hero {
+    text-align: center; padding: 100px 0 120px;
+    position: relative; border-bottom: 1px solid var(--border-color);
+    max-width: 1280px; margin: 0 auto;
+    animation: fadeInDown 0.6s ease;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid var(--border-color); font-size: 12px;
+    margin-bottom: 24px; background: var(--bg-color);
+    transition: border-color 0.2s;
+  }
+  .hero-badge:hover { border-color: var(--text-muted); }
+
+  .hero h1 { font-size: 64px; font-weight: 600; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 40px; }
+
+  .color-strip {
+    height: 8px; width: 100%; display: flex;
+    position: absolute; bottom: 0; left: 0;
+    overflow: hidden;
+  }
+  .strip-segment { 
+    height: 100%; flex: 1; 
+    transition: opacity 0.3s;
+  }
+  .color-strip:hover .strip-segment { opacity: 0.8; }
+
+  .section-container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+  .features {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .feature-card {
+    padding: 60px 40px; border-right: 1px solid var(--border-color);
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 300px; transition: background 0.3s, transform 0.3s;
+    animation: fadeInUp 0.6s ease both;
+  }
+  .feature-card:nth-child(1) { animation-delay: 0.1s; }
+  .feature-card:nth-child(2) { animation-delay: 0.2s; }
+  .feature-card:nth-child(3) { animation-delay: 0.3s; }
+  
+  .feature-card:hover { background: var(--btn-bg); transform: translateY(-2px); }
+  .feature-card:last-child { border-right: none; }
+
+  .feature-card h3 { font-size: 24px; font-weight: 600; margin-bottom: 16px; transition: color 0.2s; }
+  .feature-card:hover h3 { color: var(--blue); }
+  .feature-card p { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; flex-grow: 1; }
+
+  .arrow-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--border-color);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-color); color: var(--text-main);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s, color 0.3s;
+  }
+  .feature-card:hover .arrow-btn {
+    background: var(--text-main); color: var(--bg-color);
+    transform: translateX(6px) scale(1.05);
+  }
+
+  /* PAGES / MODALS */
+  .page-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-color); z-index: 200;
+    overflow-y: auto; display: none;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .page-overlay.active {
+    display: block; opacity: 1; transform: translateY(0);
+  }
+  
+  .page-header {
+    padding: 20px 0; border-bottom: 1px solid var(--border-color);
+    position: sticky; top: 0; background: var(--bg-color); z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 1000px; margin: 0 auto; padding: 20px 24px;
+  }
+  .page-header h2 { font-size: 24px; font-weight: 600; }
+  .close-btn {
+    background: var(--btn-bg); border: 1px solid var(--border-color);
+    padding: 8px 16px; border-radius: 6px; font-size: 14px;
+    cursor: pointer; font-family: inherit; transition: background 0.2s, transform 0.2s;
+  }
+  .close-btn:hover { background: var(--btn-hover); transform: scale(1.02); }
+
+  .page-content {
+    max-width: 1000px; margin: 0 auto; padding: 60px 24px;
+    animation: fadeInUp 0.5s ease;
+  }
+
+  /* DEV PAGE STYLES */
+  .dev-hero { margin-bottom: 60px; }
+  .dev-hero h1 { font-size: 48px; font-weight: 600; letter-spacing: -1px; margin-bottom: 20px; }
+  .dev-hero p { font-size: 20px; color: var(--text-muted); max-width: 700px; line-height: 1.6; }
+
+  .dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 60px; }
+  .dev-card { 
+    border: 1px solid var(--border-color); padding: 40px; border-radius: 12px; 
+    background: var(--bg-color); transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .dev-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .dev-card h3 { font-size: 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .dev-card p { font-size: 16px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; }
+  
+  .dev-list { margin-bottom: 40px; }
+  .dev-list h3 { font-size: 28px; font-weight: 600; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+  .dev-list ul { display: flex; flex-direction: column; gap: 16px; }
+  .dev-list li { 
+    display: flex; align-items: flex-start; gap: 16px; 
+    padding: 20px; border: 1px solid var(--border-color); 
+    border-radius: 8px; background: var(--bg-color);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .dev-list li:hover { transform: translateX(4px); border-color: var(--text-muted); }
+  .dev-list li strong { display: block; font-size: 18px; margin-bottom: 4px; color: var(--text-main); }
+  .dev-list li span { font-size: 15px; color: var(--text-muted); }
+
+  /* RESOURCES PAGE STYLES */
+  .res-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .res-card {
+    border: 1px solid var(--border-color); border-radius: 12px;
+    padding: 40px; background: var(--bg-color);
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+  }
+  .res-card:hover { 
+    border-color: var(--text-muted); 
+    transform: translateY(-4px); 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+  .res-card h3 { font-size: 24px; margin-bottom: 12px; }
+  .res-card p { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; }
+  .res-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--blue); font-weight: 500; font-size: 16px;
+  }
+  .res-link svg { transition: transform 0.2s; }
+  .res-card:hover .res-link svg { transform: translateX(4px); }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 36px; }
+    .features { grid-template-columns: 1fr; }
+    .feature-card { border-right: none; border-bottom: 1px solid var(--border-color); }
+    .nav-links { display: none; }
+    .dev-grid, .res-grid { grid-template-columns: 1fr; }
+    .dev-hero h1 { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<header>
+  <div class="nav">
+    <div class="nav-left">
+      <div class="logo-circle" onclick="closePage()">SD</div>
+      <div class="nav-links">
+        <a onclick="openPage('dev')">Разработчикам</a>
+        <a onclick="openPage('res')">Ресурсы</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="mainContent">
+  <section class="hero">
+    <div class="section-container">
+      <div class="hero-badge">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z" fill="#ffb900"/>
+          <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" fill="#fff"/>
+          <path d="M8 4a4 4 0 100 8A4 4 0 008 4z" fill="#ffb900"/>
+        </svg>
+        Игры и сайты на HTML и не только
+      </div>
+      <h1>SpeedDqie. Полезные проекты<br>для интернета.</h1>
+    </div>
+    <div class="color-strip">
+      <div class="strip-segment" style="background: #0077b6;"></div>
+      <div class="strip-segment" style="background: #4caf50;"></div>
+      <div class="strip-segment" style="background: #9c27b0;"></div>
+      <div class="strip-segment" style="background: #e91e63;"></div>
+      <div class="strip-segment" style="background: #2e7d32;"></div>
+    </div>
+  </section>
+
+  <section class="section-container">
+    <div class="features">
+      <a href="https://dqiemar.github.io/stoptime" target="_blank" class="feature-card">
+        <div>
+          <h3>Останови время</h3>
+          <p>Игра, нацеленная на развитие реакции. Работает прямо в браузере без лишних установок.</p>
+        </div>
+        <div class="arrow-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+      </a>
+      <a href="https://dqiemar.github.io/prompts" target="_blank" class="feature-card">
+        <div>
+          <h3>PromptAI</h3>
+          <p>Список промптов для нейросетей. Сохраняйте свои варианты и скачивайте лучшие находки.</p>
+        </div>
+        <div class="arrow-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+      </a>
+      <a href="https://github.com/dqiemar/zombie" target="_blank" class="feature-card">
+        <div>
+          <h3>Zombie Survival</h3>
+          <p>Игра про зомби выживание на C++. Где ты должен убивать зомби, собирать с них ресурсы, и строить вспомогательные постройки.</p>
+        </div>
+        <div class="arrow-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+      </a>
+    </div>
+  </section>
+</main>
+
+<!-- DEV PAGE -->
+<div id="page-dev" class="page-overlay">
+  <div class="page-header">
+    <h2>Разработчикам</h2>
+    <button class="close-btn" onclick="closePage()">Закрыть</button>
+  </div>
+  <div class="page-content">
+    <div class="dev-hero">
+      <h1>Открытый исходный код. Полная свобода.</h1>
+      <p>Мы верим в прозрачность и совместную работу. Весь наш код доступен публично. Вы можете изучать его, форкать, предлагать изменения и использовать в своих проектах.</p>
+    </div>
+
+    <div class="dev-grid">
+      <div class="dev-card">
+        <h3>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          GitHub
+        </h3>
+        <p>Наш основной репозиторий. Здесь хранятся исходники всех проектов, документация и инструменты для сборки.</p>
+        <a href="https://github.com/dqiemar" target="_blank" class="res-link">
+          Перейти на GitHub 
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="dev-card">
+        <h3>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
+          </svg>
+          Discord
+        </h3>
+        <p>Наше сообщество. Обсуждение кода, помощь с проектами, свежие новости и просто общение с разработчиками.</p>
+        <a href="https://discord.gg/EaG32dUGb7" target="_blank" class="res-link">
+          Присоединиться к серверу 
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="dev-list">
+      <h3>Что у нас есть</h3>
+      <ul>
+        <li>
+          <div>
+            <strong>Полный открытый исходный код</strong>
+            <span>Каждый файл, каждая строчка кода доступна на GitHub. Никаких скрытых модулей.</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Лицензия MIT</strong>
+            <span>Вы можете свободно использовать, изменять и распространять наш код в своих проектах.</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Документация</strong>
+            <span>В каждом репозитории есть README с подробным описанием, как запустить и собрать проект.</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Активное сообщество</strong>
+            <span>Наш Discord-сервер — это место, где можно задать вопрос и получить помощь от других разработчиков.</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Пул-реквесты и форки</strong>
+            <span>Мы всегда рады предложениям. Если у вас есть идея, как улучшить проект — смело создавайте PR.</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- RESOURCES PAGE -->
+<div id="page-res" class="page-overlay">
+  <div class="page-header">
+    <h2>Ресурсы</h2>
+    <button class="close-btn" onclick="closePage()">Закрыть</button>
+  </div>
+  <div class="page-content">
+    <div class="dev-hero" style="margin-bottom: 40px;">
+      <h1>Полезные ссылки.</h1>
+      <p>Всё, что нужно для связи с нами и слежения за проектами.</p>
+    </div>
+
+    <div class="res-grid">
+      <div class="res-card">
+        <div>
+          <h3>GitHub профиль</h3>
+          <p>Основной аккаунт разработчика. Здесь лежат все проекты и код.</p>
+        </div>
+        <a href="https://github.com/dqiemar" target="_blank" class="res-link">
+          dqiemar 
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="res-card">
+        <div>
+          <h3>GitHub профиль</h3>
+          <p>Аккаунт нашего разработчика в команде. Он тоже выпускает новые сайты и игры.</p>
+        </div>
+        <a href="https://github.com/gamertive" target="_blank" class="res-link">
+          gamertive 
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="res-card">
+        <div>
+          <h3>Discord сервер</h3>
+          <p>Общайся с разработчиками, задавай вопросы и следи за новостями.</p>
+        </div>
+        <a href="https://discord.gg/EaG32dUGb7" target="_blank" class="res-link">
+          Присоединиться 
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openPage(type) {
+    document.querySelectorAll('.page-overlay').forEach(el => el.classList.remove('active'));
+    document.getElementById('page-' + type).classList.add('active');
+    document.body.classList.add('allow-scroll');
+    window.scrollTo(0, 0);
+  }
+
+  function closePage() {
+    document.querySelectorAll('.page-overlay').forEach(el => el.classList.remove('active'));
+    document.body.classList.remove('allow-scroll');
+    window.scrollTo(0, 0);
+  }
+</script>
+
+</body>
+</html>
